@@ -43,6 +43,10 @@ int main(int argc,char* argv[])
 	cout<<" -blue_offset:"<<fbi.blue_offset<<",blue_length:"<<fbi.blue_length<<endl;
 	cout<<" -alpha_offset:"<<fbi.alpha_offset<<",alpha_length:"<<fbi.alpha_length<<endl;
 
+	_u8* raw_buffer = new _u8[fbi.width*fbi.height*(fbi.bpp/8)];
+	_get_raw_buffer(raw_buffer,fbi.size,fp);
+	delete [] raw_buffer;
+
 	pclose(fp);
 	cout<<"capture end"<<endl;
 	return 0;
