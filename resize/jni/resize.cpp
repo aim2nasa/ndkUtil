@@ -16,7 +16,8 @@ typedef signed int		_s32;
 
 int resize_raw_image(_u8* raw_buffer,_u8* dest,int nBpp,int nWidth,int nHeight,int resize_w,int resize_h,_u32 out_pixel_per_bytes);
 int conv_image_bpp(_u8* src, _u8* dest, const _u16 w, const _u16 h, _u32 src_bpp, _u32 dest_bpp);
-void method_0(int nThreshold,int nBpp,int nWidth,int nHeight,int out_pixel_per_bytes,_u8* resize_buffer,_u8* raw_buffer);
+void method_0(int nThreshold,int nBpp,int nWidth,int nHeight,int* pResize_w,int* pResize_h,int out_pixel_per_bytes,_u8* resize_buffer,_u8* raw_buffer);
+void dump(const char* pFileName,_u8* buffer,size_t bufferSize);
 
 using namespace std;
 
@@ -24,7 +25,7 @@ int main(int argc,char* argv[])
 {
 	if(argc<7) {
 		cout<<"usage: resize <Bytes per Pixel> <width> <height> <source raw file> <resized raw file> <method (0 or 1)><threshold(opt)>"<<endl;
-		cout<<"ex. resize 4 1440 2560 dump.raw resized.raw"<<endl;
+		cout<<"ex. resize 4 1440 2560 dump.raw resized.raw 1"<<endl;
 		cout<<"    threshold is calculated as width x height, default is 576x1024=589824"<<endl;
 		cout<<"    method 0: resizing through threshold value and neighborhood algorithm"<<endl;
 		cout<<"    method 1: resizing by changing Bytes per Pixel from 4bytes to 3bytes(only works for Bytes per Pixel is 4)"<<endl;
@@ -41,6 +42,11 @@ int main(int argc,char* argv[])
 	cout<<"Bytes per Pixel:"<<nBpp<<",width:"<<nWidth<<",height:"<<nHeight<<",method:"<<nMethod<<",threshold:"<<nThreshold<<endl;
 	cout<<"source raw file size:"<<nBpp*nWidth*nHeight<<"bytes"<<endl;
 	
+	if(nMethod!=0 && nMethod!=1) {
+		cout<<"Unsupported method:"<<nMethod<<endl;
+		return -1;
+	}
+	
 	if(nMethod==1 && nBpp!=4) {
 		cout<<"Unsupported raw format"<<endl;
 		return -1;
@@ -55,10 +61,23 @@ int main(int argc,char* argv[])
 	int nReadUnit = BUFFER_SIZE;
 	int nRead=0,nTotalRead = 0;
 	_u8 buffer[BUFFER_SIZE];
-	_u8* resize_buffer = new _u8[nWidth*nHeight*OUT_BYTE_PER_PIXEL];
+	_u8* raw_buffer = new _u8[nWidth*nHeight*nBpp];	
+	_u8* resize_buffer = new _u8[nWidth*nHeight*OUT_BYTE_PER_PIXEL];	//편의상 실제 resize크기보다 크게 잡고 이중 일부를 쓰도록 한다
 	while( 0 < (nRead = fread(buffer, 1, nReadUnit, fp)) ) {
+		memcpy(raw_buffer+nTotalRead,buffer,nRead);
 		nTotalRead += nRead;
 	}
+	
+	int resize_w = nWidth;
+	int resize_h = nHeight;
+
+	cout<<"Before size, width:"<<resize_w<<",height:"<<resize_h<<endl;
+	if(nMethod==0) method_0(nThreshold,nBpp,nWidth,nHeight,&resize_w,&resize_h,OUT_BYTE_PER_PIXEL,resize_buffer,raw_buffer);
+	cout<<"After resizing, width:"<<resize_w<<",height:"<<resize_h<<endl;	
+	
+	dump(argv[5],resize_buffer,resize_w*resize_h*OUT_BYTE_PER_PIXEL);
+	
+	delete [] raw_buffer;
 	delete [] resize_buffer;
 	fclose(fp);
 	cout<<"Total read:"<<nTotalRead<<"bytes"<<endl;
@@ -68,20 +87,34 @@ int main(int argc,char* argv[])
 	return 0;
 }
 
-void method_0(int nThreshold,int nBpp,int nWidth,int nHeight,int out_pixel_per_bytes,_u8* resize_buffer,_u8* raw_buffer)
+void dump(const char* pFileName,_u8* buffer,size_t bufferSize)
+{
+	assert(pFileName);
+	cout<<"dump:"<<pFileName<<",bufferSize:"<<bufferSize<<endl;
+	
+	FILE* fp = fopen(pFileName,"w");
+	size_t nTotal=0,readUnit = BUFFER_SIZE;
+	while(nTotal<bufferSize) {
+		if((bufferSize-nTotal)<BUFFER_SIZE) readUnit = bufferSize-nTotal;
+		size_t nWrite = fwrite(buffer+nTotal,1,readUnit,fp);
+		assert(readUnit==nWrite);
+		nTotal += nWrite;
+	}
+	fclose(fp);	
+	cout<<nTotal<<"bytes dumped"<<endl;
+}
+
+void method_0(int nThreshold,int nBpp,int nWidth,int nHeight,int* pResize_w,int* pResize_h,int out_pixel_per_bytes,_u8* resize_buffer,_u8* raw_buffer)
 {
 	assert(resize_buffer);
-	
-	int resize_w = nWidth;
-	int resize_h = nHeight;
-	
+		
 	if((nWidth * nHeight) > nThreshold) {
 		float ratio = nWidth / (float)nHeight;
-		while(resize_w * resize_h > nThreshold) {
-				resize_h--;
-				resize_w = (int)((float)resize_h * ratio);
+		while( (*pResize_w)*(*pResize_h) > nThreshold) {
+				(*pResize_h)--;
+				(*pResize_w) = (int)((float)(*pResize_h) * ratio);
 		}
-		resize_raw_image(resize_buffer,raw_buffer,nBpp,nWidth,nHeight,resize_w,resize_h,out_pixel_per_bytes);
+		resize_raw_image(resize_buffer,raw_buffer,nBpp,nWidth,nHeight,*pResize_w,*pResize_h,out_pixel_per_bytes);
 	}
 }
 
