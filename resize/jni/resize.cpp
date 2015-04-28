@@ -12,9 +12,11 @@ typedef signed int		_s32;
 
 #define BUFFER_SIZE			1024
 #define DEFAULT_THRESHOLD	589824	//576x1024
+#define OUT_BYTE_PER_PIXEL	3
 
 int resize_raw_image(_u8* raw_buffer,_u8* dest,int nBpp,int nWidth,int nHeight,int resize_w,int resize_h,_u32 out_pixel_per_bytes);
 int conv_image_bpp(_u8* src, _u8* dest, const _u16 w, const _u16 h, _u32 src_bpp, _u32 dest_bpp);
+void method_0(int nThreshold,int nBpp,int nWidth,int nHeight,int out_pixel_per_bytes,_u8* resize_buffer,_u8* raw_buffer);
 
 using namespace std;
 
@@ -53,9 +55,11 @@ int main(int argc,char* argv[])
 	int nReadUnit = BUFFER_SIZE;
 	int nRead=0,nTotalRead = 0;
 	_u8 buffer[BUFFER_SIZE];
+	_u8* resize_buffer = new _u8[nWidth*nHeight*OUT_BYTE_PER_PIXEL];
 	while( 0 < (nRead = fread(buffer, 1, nReadUnit, fp)) ) {
 		nTotalRead += nRead;
 	}
+	delete [] resize_buffer;
 	fclose(fp);
 	cout<<"Total read:"<<nTotalRead<<"bytes"<<endl;
 	
@@ -64,7 +68,24 @@ int main(int argc,char* argv[])
 	return 0;
 }
 
-int resize_raw_image(_u8* raw_buffer,_u8* dest,int nBpp,int nWidth,int nHeight,int resize_w,int resize_h,_u32 out_pixel_per_bytes)
+void method_0(int nThreshold,int nBpp,int nWidth,int nHeight,int out_pixel_per_bytes,_u8* resize_buffer,_u8* raw_buffer)
+{
+	assert(resize_buffer);
+	
+	int resize_w = nWidth;
+	int resize_h = nHeight;
+	
+	if((nWidth * nHeight) > nThreshold) {
+		float ratio = nWidth / (float)nHeight;
+		while(resize_w * resize_h > nThreshold) {
+				resize_h--;
+				resize_w = (int)((float)resize_h * ratio);
+		}
+		resize_raw_image(resize_buffer,raw_buffer,nBpp,nWidth,nHeight,resize_w,resize_h,out_pixel_per_bytes);
+	}
+}
+
+int resize_raw_image(_u8* dest,_u8* raw_buffer,int nBpp,int nWidth,int nHeight,int resize_w,int resize_h,_u32 out_pixel_per_bytes)
 {
 	_u32 pixel_per_bytes = nBpp; 
 	_u32 x_ratio = (_u32)((nWidth<<16)/resize_w) + 1;
