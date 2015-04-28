@@ -16,11 +16,13 @@ typedef signed int 		_s32;
 int _get_raw_buffer(_u8* p,_u32 fbiSize,FILE* fp);
 int _get_surface_info(fbinfo& fbi,const int width, const int height, const int format);
 
+using namespace std;
+
 int main(int argc,char* argv[])
 {
 	FILE* fp = popen("screencap","r");
 	if(!fp){
-		std::cout<<"popen() error"<<std::endl;
+		cout<<"popen() error"<<endl;
 		return -1;
 	}
 
@@ -28,17 +30,17 @@ int main(int argc,char* argv[])
 	ret = fread(&w,1,sizeof(w),fp);
 	ret = fread(&h,1,sizeof(h),fp);
 	ret = fread(&f,1,sizeof(f),fp);
-	std::cout<<"w:"<<w<<",h:"<<h<<",f"<<f<<std::endl;
+	cout<<"w:"<<w<<",h:"<<h<<",f"<<f<<endl;
 	
 	struct fbinfo fbi;
 	if(_get_surface_info(fbi,w, h, f)){
-		std::cout<<"unknown format"<<std::endl;
+		cout<<"unknown format"<<endl;
 		return -1;
 	}	
-	std::cout<<"bpp:"<<fbi.bpp<<",size:"<<fbi.size<<",width:"<<fbi.size<<",height:"<<fbi.height<<std::endl;
+	cout<<"bpp:"<<fbi.bpp<<",size:"<<fbi.size<<",width:"<<fbi.size<<",height:"<<fbi.height<<endl;
 
 	pclose(fp);
-	std::cout<<"capture end"<<std::endl;
+	cout<<"capture end"<<endl;
 	return 0;
 }
 
