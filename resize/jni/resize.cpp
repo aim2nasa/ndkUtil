@@ -13,6 +13,9 @@ typedef signed int		_s32;
 #define BUFFER_SIZE			1024
 #define DEFAULT_THRESHOLD	589824	//576x1024
 
+int resize_raw_image(_u8* raw_buffer,_u8* dest,int nBpp,int nWidth,int nHeight,int resize_w,int resize_h,_u32 out_pixel_per_bytes);
+int conv_image_bpp(_u8* src, _u8* dest, const _u16 w, const _u16 h, _u32 src_bpp, _u32 dest_bpp);
+
 using namespace std;
 
 int main(int argc,char* argv[])
@@ -58,5 +61,46 @@ int main(int argc,char* argv[])
 	
 	assert(nWidth*nHeight*nBpp==nTotalRead);
 	cout<<"resize end"<<endl;
+	return 0;
+}
+
+int resize_raw_image(_u8* raw_buffer,_u8* dest,int nBpp,int nWidth,int nHeight,int resize_w,int resize_h,_u32 out_pixel_per_bytes)
+{
+	_u32 pixel_per_bytes = nBpp; 
+	_u32 x_ratio = (_u32)((nWidth<<16)/resize_w) + 1;
+	_u32 y_ratio = (_u32)((nHeight<<16)/resize_h) + 1;
+
+	_u32 i, j;
+	_u32 x2, y2;
+	for(i = 0 ; i < resize_h ; ++i) {
+		y2 = ((i * y_ratio)>>16) ;
+		for(j = 0 ; j < resize_w ; ++j) {
+			x2 = ((j * x_ratio)>>16) ;
+
+			dest[(i*resize_w*out_pixel_per_bytes)+(j*out_pixel_per_bytes)+0] = 
+				raw_buffer[(y2*nWidth*pixel_per_bytes)+(x2*pixel_per_bytes)+2];
+
+			dest[(i*resize_w*out_pixel_per_bytes)+(j*out_pixel_per_bytes)+1] = 
+				raw_buffer[(y2*nWidth*pixel_per_bytes)+(x2*pixel_per_bytes)+1];
+
+			dest[(i*resize_w*out_pixel_per_bytes)+(j*out_pixel_per_bytes)+2] = 
+				raw_buffer[(y2*nWidth*pixel_per_bytes)+(x2*pixel_per_bytes)+0];
+		}
+	}
+	return 0;
+}
+
+int conv_image_bpp(_u8* src, _u8* dest, const _u16 w, const _u16 h, _u32 src_bpp, _u32 dest_bpp) {
+	_u32 i, j;
+	src_bpp /= 8; /* maybe 32 */
+	dest_bpp /= 8; /* maybe 24 */
+
+	for(i = 0 ; i < h ; ++i) {
+		for(j = 0 ; j < w ; ++j) {
+			dest[(i * w * dest_bpp) + (j * dest_bpp) + 0] = src[(i * w * src_bpp) + (j * src_bpp) + 2];
+			dest[(i * w * dest_bpp) + (j * dest_bpp) + 1] = src[(i * w * src_bpp) + (j * src_bpp) + 1];
+			dest[(i * w * dest_bpp) + (j * dest_bpp) + 2] = src[(i * w * src_bpp) + (j * src_bpp) + 0];
+		}
+	}
 	return 0;
 }
