@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <zlib.h>
+#include <assert.h>
 
 typedef unsigned char 	_u8;
 typedef unsigned short 	_u16;
@@ -44,7 +45,9 @@ int main(int argc,char* argv[])
 	cout<<" -alpha_offset:"<<fbi.alpha_offset<<",alpha_length:"<<fbi.alpha_length<<endl;
 
 	_u8* raw_buffer = new _u8[fbi.width*fbi.height*(fbi.bpp/8)];
-	_get_raw_buffer(raw_buffer,fbi.size,fp);
+	int nRead = _get_raw_buffer(raw_buffer,fbi.size,fp);
+	assert(nRead==fbi.size);
+	cout<<"get_raw_buffer read:"<<nRead<<endl;
 	delete [] raw_buffer;
 
 	pclose(fp);
