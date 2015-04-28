@@ -23,6 +23,7 @@ int main(int argc,char* argv[])
 {
 	if(argc<2) {
 		cout<<"usage: cap <raw output file>"<<endl;
+		cout<<"Copyright© by Funzin"<<endl;
 		return -1;
 	}
 
