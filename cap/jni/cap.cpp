@@ -14,7 +14,7 @@ typedef signed int 		_s32;
 
 #define DDMS_RAWIMAGE_VERSION 1
 
-int _get_raw_buffer(_u8* p,_u32 fbiSize,FILE* fp);
+int _get_raw_buffer(_u8* p,_u32 fbiSize,FILE* fp,const char* pDumpFile=NULL);
 int _get_surface_info(fbinfo& fbi,const int width, const int height, const int format);
 
 using namespace std;
@@ -50,7 +50,7 @@ int main(int argc,char* argv[])
 	cout<<" -alpha_offset:"<<fbi.alpha_offset<<",alpha_length:"<<fbi.alpha_length<<endl;
 
 	_u8* raw_buffer = new _u8[fbi.width*fbi.height*(fbi.bpp/8)];
-	int nRead = _get_raw_buffer(raw_buffer,fbi.size,fp);
+	int nRead = _get_raw_buffer(raw_buffer,fbi.size,fp,argv[1]);
 	assert(nRead==fbi.size);
 	cout<<"get_raw_buffer read:"<<nRead<<endl;
 	delete [] raw_buffer;
@@ -60,21 +60,33 @@ int main(int argc,char* argv[])
 	return 0;
 }
 
-int _get_raw_buffer(_u8* p,_u32 fbiSize,FILE* fp)
+int _get_raw_buffer(_u8* p,_u32 fbiSize,FILE* fp,const char* pDumpFile)
 {
+	cout<<"dumpFile:"<<pDumpFile<<endl;
+
 	static const _u32 buff_size = 1 * 1024;
 	int fb_size = fbiSize ;
 	int total_read = 0;
 	int read_size = buff_size;
 	int ret;
 	_u8 buff[buff_size];	
+	FILE* fpDump=NULL;
+
+	cout<<"before open dumpFile:"<<pDumpFile<<"fpDump:"<<fpDump<<endl;
+	if(pDumpFile) fpDump = fopen(pDumpFile,"wb");
+	cout<<"after open dumpFile:"<<pDumpFile<<"fpDump:"<<fpDump<<endl;
+
 	while( 0 < (ret = fread(buff, 1, read_size, fp)) ) {
+		size_t nWrite = fwrite(buff,1,ret,fpDump);
+		cout<<"ret:"<<ret<<",nWrite:"<<nWrite<<"\r";
+		assert(nWrite==ret);
 		total_read += ret;
 		memcpy(p, buff, ret);
 		p+=ret;
 		if(fb_size - total_read < buff_size)
 			read_size = fb_size - total_read;
 	}
+	fclose(fpDump);
 	return total_read;
 }
 
