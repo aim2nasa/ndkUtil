@@ -21,6 +21,11 @@ using namespace std;
 
 int main(int argc,char* argv[])
 {
+	if(argc<2) {
+		cout<<"usage: cap <raw output file>"<<endl;
+		return -1;
+	}
+
 	FILE* fp = popen("screencap","r");
 	if(!fp){
 		cout<<"popen() error"<<endl;
