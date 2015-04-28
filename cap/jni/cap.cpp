@@ -37,14 +37,14 @@ int main(int argc,char* argv[])
 	ret = fread(&w,1,sizeof(w),fp);
 	ret = fread(&h,1,sizeof(h),fp);
 	ret = fread(&f,1,sizeof(f),fp);
-	cout<<" -w:"<<w<<",h:"<<h<<",f"<<f<<endl;
+	cout<<" -w:"<<w<<",h:"<<h<<",f:"<<f<<endl;
 	
 	struct fbinfo fbi;
 	if(_get_surface_info(fbi,w, h, f)){
 		cout<<"unknown format"<<endl;
 		return -1;
 	}	
-	cout<<" -bpp:"<<fbi.bpp<<",size:"<<fbi.size<<",width:"<<fbi.size<<",height:"<<fbi.height<<endl;
+	cout<<" -bpp:"<<fbi.bpp<<",size:"<<fbi.size<<",width:"<<fbi.width<<",height:"<<fbi.height<<endl;
 	cout<<" -red_offset:"<<fbi.red_offset<<",red_length:"<<fbi.red_length<<endl;
 	cout<<" -green_offset:"<<fbi.green_offset<<",green_length:"<<fbi.green_length<<endl;
 	cout<<" -blue_offset:"<<fbi.blue_offset<<",blue_length:"<<fbi.blue_length<<endl;
