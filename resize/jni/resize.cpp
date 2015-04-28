@@ -36,6 +36,11 @@ int main(int argc,char* argv[])
 	cout<<"Bytes per Pixel:"<<nBpp<<",width:"<<nWidth<<",height:"<<nHeight<<",method:"<<nMethod<<",threshold:"<<nThreshold<<endl;
 	cout<<"source raw file size:"<<nBpp*nWidth*nHeight<<"bytes"<<endl;
 	
+	if(nMethod==1 && nBpp!=4) {
+		cout<<"Unsupported raw format"<<endl;
+		return -1;
+	}
+	
 	FILE* fp = fopen(argv[4],"rb");
 	if(!fp) {
 		cout<<"file open failure"<<argv[1]<<endl;
