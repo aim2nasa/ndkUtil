@@ -17,10 +17,12 @@ using namespace std;
 
 int main(int argc,char* argv[])
 {
-	if(argc<6) {
-		cout<<"usage: resize <Bytes per Pixel> <width> <height> <source raw file> <resized raw file> <threshold(opt)>"<<endl;
+	if(argc<7) {
+		cout<<"usage: resize <Bytes per Pixel> <width> <height> <source raw file> <resized raw file> <method (0 or 1)><threshold(opt)>"<<endl;
 		cout<<"ex. resize 4 1440 2560 dump.raw resized.raw"<<endl;
 		cout<<"    threshold is calculated as width x height, default is 576x1024=589824"<<endl;
+		cout<<"    method 0: resizing through threshold value and neighborhood algorithm"<<endl;
+		cout<<"    method 1: resizing by changing Bytes per Pixel from 4bytes to 3bytes(only works for Bytes per Pixel is 4)"<<endl;
 		cout<<"Copyright© by Funzin"<<endl<<endl;
 		return -1;
 	}
@@ -29,8 +31,9 @@ int main(int argc,char* argv[])
 	int nWidth = atoi(argv[2]);
 	int nHeight = atoi(argv[3]);	
 	int nThreshold = DEFAULT_THRESHOLD;
-	if(argc>6) nThreshold = atoi(argv[6]);
-	cout<<"Bytes/Pixel:"<<nBpp<<",Width:"<<nWidth<<",Height:"<<nHeight<<",Threshold:"<<nThreshold<<endl;
+	int nMethod = atoi(argv[6]);
+	if(argc>7) nThreshold = atoi(argv[7]);
+	cout<<"Bytes per Pixel:"<<nBpp<<",width:"<<nWidth<<",height:"<<nHeight<<",method:"<<nMethod<<",threshold:"<<nThreshold<<endl;
 	cout<<"source raw file size:"<<nBpp*nWidth*nHeight<<"bytes"<<endl;
 	
 	FILE* fp = fopen(argv[4],"rb");
