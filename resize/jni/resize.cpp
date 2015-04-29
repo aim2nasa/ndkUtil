@@ -59,11 +59,11 @@ int main(int argc,char* argv[])
 	cout<<"source raw file:"<<argv[4]<<endl;
 	cout<<"resized raw file:"<<argv[5]<<endl;
 
-	cout<<"source {width("<<nWidth<<") x height("<<nHeight<<"):"<<nWidth*nHeight<<",ratio:"<<ratio(nWidth,nHeight);
+	cout<<"source {width("<<nWidth<<") x height("<<nHeight<<"):"<<nWidth*nHeight<<",ratio(width/height):"<<ratio(nWidth,nHeight);
 	cout<<",bytes per pixel:"<<nBpp<<",size:"<<nWidth*nHeight*nBpp<<"bytes}"<<endl;
 
 	int nThreshold = nResizeWidth*nResizeHeight;
-	cout<<"resized {width("<<nResizeWidth<<") x height("<<nResizeHeight<<"):"<<nThreshold<<",ratio:"<<ratio(nResizeWidth,nResizeHeight);
+	cout<<"resized {width("<<nResizeWidth<<") x height("<<nResizeHeight<<"):"<<nThreshold<<",ratio(width/height):"<<ratio(nResizeWidth,nResizeHeight);
 	cout<<",bytes per pixel:"<<OUT_BYTE_PER_PIXEL<<",size:"<<nResizeWidth*nResizeHeight*OUT_BYTE_PER_PIXEL<<"bytes}"<<endl;
 	
 	FILE* fp = fopen(argv[4],"rb");
