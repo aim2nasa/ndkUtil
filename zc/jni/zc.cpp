@@ -13,6 +13,13 @@ typedef signed int		_s32;
 
 #define BUFFER_SIZE			1024
 #define OUT_BYTE_PER_PIXEL	3
+#define START_TIMER(t) gettimeofday(&t,0);
+#define STOP_TIMER(t) gettimeofday(&t,0);
+#define ELAPSED_TIME(start,end,total,name) \
+{\
+	timersub(&end,&start,&total); \
+	printf(""name": %ld.%06ldsec\n",total.tv_sec,total.tv_usec);\
+}
 
 using namespace std;
 
@@ -50,6 +57,10 @@ int main(int argc,char* argv[])
 		return -1;
 	}
 
+	struct timeval startTime;
+	struct timeval endTime;
+	struct timeval totalTime;
+
 	cout<<endl<<"[processing]"<<endl;
 	
 	int nReadUnit = BUFFER_SIZE;
@@ -66,6 +77,7 @@ int main(int argc,char* argv[])
 	fclose(fp);
 	cout<<"Total read:"<<nTotalRead<<"bytes from "<<argv[4]<<endl;
 
+	START_TIMER(startTime)
 	int nRtn = compress2(cmp_buffer,(uLongf*)&cmp_buffer_size,raw_buffer,raw_buffer_size,nCompLevel);
 	switch(nRtn){
 		case Z_OK:
@@ -84,6 +96,8 @@ int main(int argc,char* argv[])
 			cout<<"Undefined error("<<nRtn<<")"<<endl;
 			break;
 	}
+	STOP_TIMER(endTime)
+	ELAPSED_TIME(startTime,endTime,totalTime,"elapsed time in compression:")
 
 	delete [] cmp_buffer;	
 	delete [] raw_buffer;
