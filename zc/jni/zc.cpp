@@ -19,7 +19,7 @@ using namespace std;
 void dump(const char* pFileName,_u8* buffer,size_t bufferSize);
 float ratio(int width,int height);
 void usage();
-void compressOk(_u8* cmp_buffer,_u32 cmp_buffer_size,_u8* raw_buffer,_u32 raw_buffer_size,int nCompLevel);
+void compressOk(_u8* cmp_buffer,_u32 cmp_buffer_size,_u8* raw_buffer,_u32 raw_buffer_size,int nCompLevel,const char* pDumpFileName);
 
 int main(int argc,char* argv[])
 {
@@ -69,7 +69,7 @@ int main(int argc,char* argv[])
 	int nRtn = compress2(cmp_buffer,(uLongf*)&cmp_buffer_size,raw_buffer,raw_buffer_size,nCompLevel);
 	switch(nRtn){
 		case Z_OK:
-			compressOk(cmp_buffer,cmp_buffer_size,raw_buffer,raw_buffer_size,nCompLevel);
+			compressOk(cmp_buffer,cmp_buffer_size,raw_buffer,raw_buffer_size,nCompLevel,argv[5]);
 			break;
 		case Z_MEM_ERROR:
 			cout<<"Z_MEM_ERROR("<<nRtn<<"), Insufficient memory"<<endl;
@@ -128,7 +128,8 @@ void dump(const char* pFileName,_u8* buffer,size_t bufferSize)
 	cout<<bufferSize<<"bytes written to "<<pFileName<<endl;
 }
 
-void compressOk(_u8* cmp_buffer,_u32 cmp_buffer_size,_u8* raw_buffer,_u32 raw_buffer_size,int nCompLevel)
+void compressOk(_u8* cmp_buffer,_u32 cmp_buffer_size,_u8* raw_buffer,_u32 raw_buffer_size,int nCompLevel,const char* pDumpFileName)
 {
+	dump(pDumpFileName,cmp_buffer,cmp_buffer_size);
 	cout<<"Raw buffer size:"<<raw_buffer_size<<",Compressed buffer size:"<<cmp_buffer_size<<",compLevel:"<<nCompLevel<<endl;
 }
