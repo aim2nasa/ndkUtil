@@ -18,17 +18,24 @@ int resize_raw_image(_u8* raw_buffer,_u8* dest,int nBpp,int nWidth,int nHeight,i
 int conv_image_bpp(_u8* src, _u8* dest, const _u16 w, const _u16 h, _u32 src_bpp, _u32 dest_bpp);
 void method_0(int nThreshold,int nBpp,int nWidth,int nHeight,int* pResize_w,int* pResize_h,int out_pixel_per_bytes,_u8* resize_buffer,_u8* raw_buffer);
 void dump(const char* pFileName,_u8* buffer,size_t bufferSize);
+float ratio(int width,int height);
 
 using namespace std;
 
 int main(int argc,char* argv[])
 {
-	if(argc<7) {
-		cout<<"usage: resize <Bytes per Pixel> <width> <height> <source raw file> <resized raw file> <method (0 or 1)><threshold(opt)>"<<endl;
-		cout<<"ex. resize 4 1440 2560 dump.raw resized.raw 1"<<endl;
-		cout<<"    threshold is calculated as width x height, default is 576x1024=589824"<<endl;
-		cout<<"    method 0: resizing through threshold value and neighborhood algorithm"<<endl;
-		cout<<"    method 1: resizing by changing Bytes per Pixel from 4bytes to 3bytes(only works for Bytes per Pixel is 4)"<<endl;
+	if(argc<9) {
+		cout<<"usage: resize <bytes per pixel> <width> <height> <source raw file> <resized raw file> <method (0 or 1)> <resize width> <resize height>"<<endl;
+		cout<<"ex. resize 4 1440 2560 dump.raw resized.raw 0 576 1024"<<endl;
+		cout<<"    -bytes per pixel : ex. 3 for RGB, 4 for RGBA"<<endl;
+		cout<<"    -width : width of source raw file"<<endl;
+		cout<<"    -height : height of source raw file"<<endl;
+		cout<<"    -source raw file : input raw file"<<endl;
+		cout<<"    -resized raw file : raw file which to be generated sized as (resize width) x (resize height)"<<endl;
+		cout<<"    -method 0: resizing through threshold value and neighborhood algorithm"<<endl;
+		cout<<"            1: resizing by changing Bytes per Pixel from 4bytes to 3bytes(only works for Bytes per Pixel is 4)"<<endl;
+		cout<<"    -resize width : width of raw file which to be generated"<<endl;
+		cout<<"    -resize height : height of raw file which to be generated"<<endl;
 		cout<<"Copyright© by Funzin"<<endl<<endl;
 		return -1;
 	}
@@ -36,11 +43,23 @@ int main(int argc,char* argv[])
 	int nBpp = atoi(argv[1]);
 	int nWidth = atoi(argv[2]);
 	int nHeight = atoi(argv[3]);	
-	int nThreshold = DEFAULT_THRESHOLD;
 	int nMethod = atoi(argv[6]);
-	if(argc>7) nThreshold = atoi(argv[7]);
-	cout<<"Bytes per Pixel:"<<nBpp<<",width:"<<nWidth<<",height:"<<nHeight<<",method:"<<nMethod<<",threshold:"<<nThreshold<<endl;
-	cout<<"source raw file size:"<<nBpp*nWidth*nHeight<<"bytes"<<endl;
+	int nResizeWidth = atoi(argv[7]);
+	int nResizeHeight = atoi(argv[8]);
+
+	cout<<"[Input parameters]"<<endl;
+	cout<<"bytes per pixel:"<<nBpp<<",width:"<<nWidth<<",height:"<<nHeight<<",method:"<<nMethod;
+	cout<<",resize width:"<<nResizeWidth<<",resize height:"<<nResizeHeight<<endl;
+
+	cout<<"source raw file:"<<argv[4]<<endl;
+	cout<<"resized raw file:"<<argv[5]<<endl;
+
+	cout<<"source {width("<<nWidth<<") x height("<<nHeight<<"):"<<nWidth*nHeight<<",ratio:"<<ratio(nWidth,nHeight);
+	cout<<",bytes per pixel:"<<nBpp<<",size:"<<nWidth*nHeight*nBpp<<"bytes}"<<endl;
+
+	int nThreshold = nResizeWidth*nResizeHeight;
+	cout<<"resized {width("<<nResizeWidth<<") x height("<<nResizeHeight<<"):"<<nThreshold<<",ratio:"<<ratio(nResizeWidth,nResizeHeight);
+	cout<<",bytes per pixel:"<<OUT_BYTE_PER_PIXEL<<",size:"<<nResizeWidth*nResizeHeight*OUT_BYTE_PER_PIXEL<<"bytes}"<<endl;
 	
 	if(nMethod!=0 && nMethod!=1) {
 		cout<<"Unsupported method:"<<nMethod<<endl;
@@ -57,6 +76,8 @@ int main(int argc,char* argv[])
 		cout<<"file open failure"<<argv[1]<<endl;
 		return -1;
 	}
+
+	cout<<endl<<"[processing]"<<endl;
 	
 	int nReadUnit = BUFFER_SIZE;
 	int nRead=0,nTotalRead = 0;
@@ -67,11 +88,12 @@ int main(int argc,char* argv[])
 		memcpy(raw_buffer+nTotalRead,buffer,nRead);
 		nTotalRead += nRead;
 	}
+	cout<<"Total read:"<<nTotalRead<<"bytes from "<<argv[4]<<endl;
 	
 	int resize_w = nWidth;
 	int resize_h = nHeight;
 
-	cout<<"Before size, width:"<<resize_w<<",height:"<<resize_h<<endl;
+	cout<<"Before resizing, width:"<<resize_w<<",height:"<<resize_h<<endl;
 	if(nMethod==0) method_0(nThreshold,nBpp,nWidth,nHeight,&resize_w,&resize_h,OUT_BYTE_PER_PIXEL,resize_buffer,raw_buffer);
 	cout<<"After resizing, width:"<<resize_w<<",height:"<<resize_h<<endl;	
 	
@@ -80,17 +102,21 @@ int main(int argc,char* argv[])
 	delete [] raw_buffer;
 	delete [] resize_buffer;
 	fclose(fp);
-	cout<<"Total read:"<<nTotalRead<<"bytes"<<endl;
 	
 	assert(nWidth*nHeight*nBpp==nTotalRead);
-	cout<<"resize end"<<endl;
+	cout<<"resizing done"<<endl;
 	return 0;
+}
+
+float ratio(int width,int height)
+{
+	return (float)width / (float)height;
 }
 
 void dump(const char* pFileName,_u8* buffer,size_t bufferSize)
 {
 	assert(pFileName);
-	cout<<"dump:"<<pFileName<<",bufferSize:"<<bufferSize<<endl;
+	cout<<"writing "<<bufferSize<<"bytes to "<<pFileName<<"..."<<endl;
 	
 	FILE* fp = fopen(pFileName,"w");
 	size_t nTotal=0,readUnit = BUFFER_SIZE;
@@ -101,7 +127,7 @@ void dump(const char* pFileName,_u8* buffer,size_t bufferSize)
 		nTotal += nWrite;
 	}
 	fclose(fp);	
-	cout<<nTotal<<"bytes dumped"<<endl;
+	cout<<bufferSize<<"bytes written to "<<pFileName<<endl;
 }
 
 void method_0(int nThreshold,int nBpp,int nWidth,int nHeight,int* pResize_w,int* pResize_h,int out_pixel_per_bytes,_u8* resize_buffer,_u8* raw_buffer)
