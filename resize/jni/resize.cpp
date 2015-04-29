@@ -11,12 +11,12 @@ typedef signed short	_s16;
 typedef signed int		_s32;
 
 #define BUFFER_SIZE			1024
-#define DEFAULT_THRESHOLD	589824	//576x1024
 #define OUT_BYTE_PER_PIXEL	3
 
 int resize_raw_image(_u8* raw_buffer,_u8* dest,int nBpp,int nWidth,int nHeight,int resize_w,int resize_h,_u32 out_pixel_per_bytes);
 int conv_image_bpp(_u8* src, _u8* dest, const _u16 w, const _u16 h, _u32 src_bpp, _u32 dest_bpp);
 void method_0(int nThreshold,int nBpp,int nWidth,int nHeight,int* pResize_w,int* pResize_h,int out_pixel_per_bytes,_u8* resize_buffer,_u8* raw_buffer);
+void method_1(int nBpp,int nWidth,int nHeight,int out_pixel_per_bytes,_u8* resize_buffer,_u8* raw_buffer);
 void dump(const char* pFileName,_u8* buffer,size_t bufferSize);
 float ratio(int width,int height);
 
@@ -95,6 +95,7 @@ int main(int argc,char* argv[])
 
 	cout<<"Before resizing, width:"<<resize_w<<",height:"<<resize_h<<endl;
 	if(nMethod==0) method_0(nThreshold,nBpp,nWidth,nHeight,&resize_w,&resize_h,OUT_BYTE_PER_PIXEL,resize_buffer,raw_buffer);
+	if(nMethod==1) method_1(nBpp,nWidth,nHeight,OUT_BYTE_PER_PIXEL,resize_buffer,raw_buffer);
 	cout<<"After resizing, width:"<<resize_w<<",height:"<<resize_h<<endl;	
 	
 	dump(argv[5],resize_buffer,resize_w*resize_h*OUT_BYTE_PER_PIXEL);
@@ -144,6 +145,13 @@ void method_0(int nThreshold,int nBpp,int nWidth,int nHeight,int* pResize_w,int*
 	}
 }
 
+void method_1(int nBpp,int nWidth,int nHeight,int out_pixel_per_bytes,_u8* resize_buffer,_u8* raw_buffer)
+{
+	assert(resize_buffer);
+	assert(nBpp==3);
+	conv_image_bpp(raw_buffer, resize_buffer, nWidth, nHeight, nBpp, out_pixel_per_bytes);
+}
+
 int resize_raw_image(_u8* dest,_u8* raw_buffer,int nBpp,int nWidth,int nHeight,int resize_w,int resize_h,_u32 out_pixel_per_bytes)
 {
 	_u32 pixel_per_bytes = nBpp; 
@@ -172,8 +180,6 @@ int resize_raw_image(_u8* dest,_u8* raw_buffer,int nBpp,int nWidth,int nHeight,i
 
 int conv_image_bpp(_u8* src, _u8* dest, const _u16 w, const _u16 h, _u32 src_bpp, _u32 dest_bpp) {
 	_u32 i, j;
-	src_bpp /= 8; /* maybe 32 */
-	dest_bpp /= 8; /* maybe 24 */
 
 	for(i = 0 ; i < h ; ++i) {
 		for(j = 0 ; j < w ; ++j) {
