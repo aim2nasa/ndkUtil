@@ -12,6 +12,13 @@ typedef signed int		_s32;
 
 #define BUFFER_SIZE			1024
 #define OUT_BYTE_PER_PIXEL	3
+#define START_TIMER(t) gettimeofday(&t,0);
+#define STOP_TIMER(t) gettimeofday(&t,0);
+#define ELAPSED_TIME(start,end,total,name) \
+{\
+	timersub(&end,&start,&total); \
+	printf(""name": %ld.%06ldsec\n",total.tv_sec,total.tv_usec);\
+}
 
 using namespace std;
 
@@ -89,8 +96,17 @@ int main(int argc,char* argv[])
 	int resize_h = nHeight;
 
 	cout<<"Before resizing, width:"<<resize_w<<",height:"<<resize_h<<endl;
+	
+	struct timeval startTime;
+	struct timeval endTime;
+	struct timeval totalTime;	
+	
+	START_TIMER(startTime)
 	if(nMethod==0) method_0(nThreshold,nBpp,nWidth,nHeight,&resize_w,&resize_h,OUT_BYTE_PER_PIXEL,resize_buffer,raw_buffer);
 	if(nMethod==1) method_1(nBpp,nWidth,nHeight,OUT_BYTE_PER_PIXEL,resize_buffer,raw_buffer);
+	STOP_TIMER(endTime)
+	ELAPSED_TIME(startTime,endTime,totalTime,"elapsed time in resizing:")
+	
 	cout<<"After resizing, width:"<<resize_w<<",height:"<<resize_h<<endl;	
 	
 	dump(argv[5],resize_buffer,resize_w*resize_h*OUT_BYTE_PER_PIXEL);
