@@ -13,6 +13,13 @@ typedef signed int 		_s32;
 #include "fbinfo.h"
 
 #define DDMS_RAWIMAGE_VERSION 1
+#define START_TIMER(t) gettimeofday(&t,0);
+#define STOP_TIMER(t) gettimeofday(&t,0);
+#define ELAPSED_TIME(start,end,total,name) \
+{\
+	timersub(&end,&start,&total); \
+	printf(""name": %ld.%06ldsec\n",total.tv_sec,total.tv_usec);\
+}
 
 int _get_raw_buffer(_u8* p,_u32 fbiSize,FILE* fp,const char* pDumpFile=NULL);
 int _get_surface_info(fbinfo& fbi,const int width, const int height, const int format);
@@ -50,8 +57,17 @@ int main(int argc,char* argv[])
 	cout<<" -blue_offset:"<<fbi.blue_offset<<",blue_length:"<<fbi.blue_length<<endl;
 	cout<<" -alpha_offset:"<<fbi.alpha_offset<<",alpha_length:"<<fbi.alpha_length<<endl;
 
+	struct timeval startTime;
+	struct timeval endTime;
+	struct timeval totalTime;
+	
 	_u8* raw_buffer = new _u8[fbi.width*fbi.height*(fbi.bpp/8)];
+	
+	START_TIMER(startTime)	
 	int nRead = _get_raw_buffer(raw_buffer,fbi.size,fp,argv[1]);
+	STOP_TIMER(endTime)
+	ELAPSED_TIME(startTime,endTime,totalTime,"elapsed time in getting raw buffer and dump it to a file:")
+	
 	assert(nRead==fbi.size);
 	cout<<"get_raw_buffer read:"<<nRead<<endl;
 	delete [] raw_buffer;
