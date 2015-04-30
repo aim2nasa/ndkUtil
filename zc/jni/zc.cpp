@@ -67,7 +67,7 @@ int main(int argc,char* argv[])
 	int nRead=0,nTotalRead = 0;
 	_u8 buffer[BUFFER_SIZE];
 	_u32 raw_buffer_size = nWidth*nHeight*nBpp;
-	_u32 cmp_buffer_size = raw_buffer_size;
+	_u32 cmp_buffer_size = 2*raw_buffer_size;
 	_u8* raw_buffer = new _u8[raw_buffer_size];	
 	_u8* cmp_buffer = new _u8[cmp_buffer_size];
 	while( 0 < (nRead = fread(buffer, 1, nReadUnit, fp)) ) {
