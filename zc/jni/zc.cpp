@@ -53,7 +53,7 @@ int main(int argc,char* argv[])
 	
 	FILE* fp = fopen(argv[4],"rb");
 	if(!fp) {
-		cout<<"file open failure"<<argv[1]<<endl;
+		cout<<"file open failure:"<<argv[4]<<endl;
 		return -1;
 	}
 
